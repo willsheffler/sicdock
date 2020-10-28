@@ -225,6 +225,8 @@ def assert_results_close(r, s, n=-1):
    if set(r.keys()) != set(s.keys()):
       print(list(r.keys()))
       print(list(s.keys()))
+   print(list(r.keys()))
+   print(list(s.keys()))
    assert set(r.keys()) == set(s.keys()), 'results must have same fields'
    assert np.allclose(r.scores[:n], s.scores[:n])
    assert np.allclose(r.xforms[:n], s.xforms[:n], atol=1e-3)

@@ -226,6 +226,7 @@ class TwoCompEvaluatorWithTrim(MultiCompEvaluatorBase):
       ubA = np.ones(len(X), dtype='i4') * (self.bodies[0].asym_body.nres - 1)
       ubB = np.ones(len(X), dtype='i4') * (self.bodies[1].asym_body.nres - 1)
 
+      # one-sided trim
       if trim_component == 'A':
          trimA1 = B[0].intersect_range(B[1], X[ok, 0], X[ok, 1], **kw)
          trimA1, trimok = trim_ok(trimA1, B[0].asym_body.nres, **kw)

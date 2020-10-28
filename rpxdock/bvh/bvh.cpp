@@ -453,7 +453,12 @@ py::tuple bvh_isect_fixed_range_vec(BVH<F> &bvh1, BVH<F> &bvh2,
 }
 
 ///////////////////////////////////////////////////
+/* 
+variations of query (you could be operating on an atom or a BV): 
+At the highest level of bounding volume, at the lowest resolution
+Next, check children, which checks for "touching points" at higher resolution 
 
+*/
 template <typename F>
 struct BVHIsectRange {
   using Scalar = F;
@@ -493,7 +498,7 @@ struct BVHIsectRange {
     // << " nasym1 " << nasym1 << std::endl;
   }
   bool intersectVolumeVolume(Sphere<F> vol1, Sphere<F> vol2) {
-    //
+    // returns true/false to continue checking children; if volumes have interesting higher resolution thing you want to look at
     //
     //  TODO: figure out why this check doesn't work if using
     //        non-unity IDs
@@ -507,26 +512,38 @@ struct BVHIsectRange {
     // << std::endl;
     // return false;
     // }
+    // bXa --> transform b to a and multiply by vol2 
+    // signdis --> if spheres don't touch > 0; how much they are touching < 0
+    // rad --> intersect dist (radius of spheres)
     return vol1.signdis(bXa * vol2) < rad;
   }
   bool intersectVolumeObject(Sphere<F> vol1, PtIdx<F> obj2) {
+    // check "light red" with "light blue"
+    // PtIdx = point index; a sphere + index # 
+    // B is side getting trimmed 
+    // if lowest res# in BV > current ub or ub res# in BV < current lb; BV is done; don't do anything. basically out of range
     if (vol1.lb % nasym1 > ub || vol1.ub % nasym1 < lb) return false;
     return vol1.signdis(bXa * obj2.pos) < rad;
   }
   bool intersectObjectVolume(PtIdx<F> obj1, Sphere<F> vol2) {
+    // atom and BV; trim obj is obj1 (A side)
+    // return False / keep going if already trimmed 
     if (obj1.idx % nasym1 > ub || obj1.idx % nasym1 < lb) return false;
     return (bXa * vol2).signdis(obj1.pos) < rad;
   }
   bool intersectObjectObject(PtIdx<F> obj1, PtIdx<F> obj2) {
+    // figure out if two things intersect; otherwise return False
     bool isect = (obj1.pos - bXa * obj2.pos).squaredNorm() < rad2;
     // std::cout << "obj/obj " << obj1.idx << " " << obj2.idx << " isect=" <<
     // isect
     // << std::endl;
+    // if intersecting, trim more
     if (isect) {
       if (obj1.idx % nasym1 < mid)
         lb = std::max(obj1.idx % nasym1 + 1, lb);
       else
         ub = std::min(obj1.idx % nasym1 - 1, ub);
+      // if trimming too much, give up
       bool ok = (ub >= min_ub) && (lb <= max_lb) && ((ub - lb) >= minrange);
       if (!ok) {
         lb = -1;
@@ -538,6 +555,15 @@ struct BVHIsectRange {
   }
 };
 template <typename F>
+/* 
+Takes BVH objects, 
+pos1, pos2: positions of bodies 
+mindist: clash dist
+maxtrim: maximum allowed trim (exit early if too much of protein is trimmed off)
+maxtrim_lb; maxtrim_ub: Nterm and Cterm
+nasym1: if bvh is sym, only trim asu (# asym resis); -1 = all 
+query obj takes clash dist, and calls BVIntersect and returns lb and ub arrays of N and C term trim objs
+*/
 py::tuple isect_range(BVH<F> &bvh1, BVH<F> &bvh2, py::array_t<F> pos1,
                       py::array_t<F> pos2, F mindist, int maxtrim = -1,
                       int maxtrim_lb = -1, int maxtrim_ub = -1,

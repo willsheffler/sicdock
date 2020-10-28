@@ -139,6 +139,16 @@ class OneCompEvaluator:
          returns score # for each "dock"
       '''
 
+      '''
+      bounds: valid residue ranges to score after trimming i.e. don't score resi that were trimmed 
+      sfxn: hscore.scorepos scores stuff from the hscore that got passed 
+         takes two pos of bodies (the same monomer in this case)
+         xforms: not clashing xforms 
+         iresl: stage of hierarchical search (grid spacing: 4A --> 2A --> 1A --> 0.5A --> 0.25A)
+         sampling at highest resl probably 0.6A due to ori + cart
+         returns score # for each "dock"
+      '''
+
       # record ranges used
       lb = np.zeros(len(scores), dtype="i4")
       ub = np.ones(len(scores), dtype="i4") * (body.nres - 1)
