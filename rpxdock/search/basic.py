@@ -26,6 +26,7 @@ def evaluate_positions_executor(executor, evaluator, xforms, **kw):
    assert nworkers > 0
    ntasks = int(len(xforms) / 10000)
    ntasks = max(nworkers, ntasks)
+   if int(ntasks) <= 0: ntasks = 1
    futures = list()
    for i, x in enumerate(np.array_split(xforms, ntasks)):
       futures.append(executor.submit(evaluator, x, **kw))

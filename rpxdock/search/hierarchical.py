@@ -13,13 +13,51 @@ def hier_search(sampler, evaluator, **kw):
    kw = rp.Bunch(kw)
    neval, indices, scores = list(), None, None
    nresl = kw.nresl if kw.nresl else evaluator.hscore.actual_nresl
+   
+   #Uncomment to dump docking metrics at each resolution level of the search.
+   #iresl_list = []
+   #data_list = []
+   #spec = kw.spec
+   #bodies = kw.bodies
    for iresl in range(kw.nresl):
       indices, xforms = expand_samples(iresl, sampler, indices, scores, **kw)
       scores, extra, t = rp.search.evaluate_positions(**kw.sub(vars()))
       neval.append((t, len(scores)))
       log.info(f"{kw.output_prefix} iresl {iresl} ntot {len(scores):11,} " +
                f"nonzero {np.sum(scores > 0):5,}")
+   #Uncomment to dump docking metrics at each resolution level of the search. 
+   """
+      iresl_list.append(iresl)
+      wrpx = kw.wts.sub(rpx=1, ncontact=0)
+      wnct = kw.wts.sub(rpx=0, ncontact=1)
+      rpx, rpx_extra = evaluator(xforms, iresl, wrpx)
+      ncontact, ncont_extra = evaluator(xforms, iresl, wnct)
+
+      data = dict(
+         attrs=dict(arg=kw, output_prefix=kw.output_prefix,
+                 output_body='all', sym=spec.arch),
+         scores=(["model"], scores.astype("f4")),
+         xforms=(["model", "comp", "hrow", "hcol"], xforms),
+         rpx=(["model"], rpx),
+         ncontact=(["model"], ncontact),
+      )
+
+      for k, v in extra.items():
+         if not isinstance(v, (list, tuple)) or len(v) > 3:
+            v = ['model'], v
+         data[k] = v
+      for i in range(len(bodies)):
+         data[f'disp{i}'] = (['model'], np.sum(xforms[:, i, :3, 3] * spec.axis[None, i, :3], axis=1))
+         data[f'angle{i}'] = (['model'], rp.homog.angle_of(xforms[:, i]) * 180 / np.pi)
+
+      data_list.append(data)
+
+   search_data = dict(resl = iresl_list, data = data_list)
+   rp.util.dump(search_data, kw.output_prefix + '_iresl_Result.pickle')
+   """
+
    stats = rp.Bunch(ntot=sum(x[1] for x in neval), neval=neval)
+
    return xforms, scores, extra, stats
 
 def expand_samples(iresl, sampler, indices=None, scores=None, beam_size=None, **kw):

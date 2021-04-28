@@ -26,10 +26,7 @@ REQUIRED = [
    'xarray==0.11.3',
    'pandas==0.24.2',
    'pytest',
-<<<<<<< HEAD
-=======
    'pytest-repeat',
->>>>>>> akhmelin/grid_1comp
    'tqdm',
    'homog',
    'cppimport',

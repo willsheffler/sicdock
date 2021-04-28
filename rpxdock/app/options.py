@@ -202,6 +202,14 @@ def default_cli_parser(parent=None, **kw):
       help='Only for monomer-to-plug docking. score weight of plug / cage hole interface. defaults to 1.0'
    )
    addarg(
+      "--weight_sasa", type=float, default=1152,
+      help="Desired SASA used to weight dock scoring"
+   )
+   addarg(
+      "--weight_error", type=float, default=4,
+      help="Standard deviation used to calculate the distribution of SASA weighting"
+      )
+   addarg(
       "--output_prefix", nargs="?", default="rpxdock", type=str,
       help="output file prefix. will output pickles for a base ResPairScore plus --hierarchy_depth hier XMaps"
    )
@@ -265,7 +273,28 @@ def default_cli_parser(parent=None, **kw):
    addarg("--ignored_aas", default='CGP', help='Amino acids to ignore in scoring')
    addarg("--score_self", action='store_true', default=False,
           help='score each interface seperately and dump in output pickle')
-
+   addarg("--function", type=str, default='stnd',
+          help='score function to use for scoring')
+   addarg("--sscount_filter", action='store_true', default=False,
+      help='calculate the ss_count in the interface')
+   addarg("--sscount_confidence", action='store_true', default=False,
+      help='If set to 1, docks below the threshold number of ss elements in the interface will not be included in the output')
+   addarg("--sscount_min_helix_length", default=4, type=int,
+      help='Min resis in helix to count as ss element')
+   addarg("--sscount_min_sheet_length", default=3, type=int,
+      help='Min resis in sheet to count as ss element')
+   addarg("--sscount_min_loop_length", default=1, type=int,
+      help='Min resis in loop to count as ss element')
+   addarg("--sscount_max_dist", default=8, type=float,
+      help='Min resis in loop to count as ss element')
+   addarg("--sscount_min_element_resis", default=3, type=int,
+      help='Min interface resis in ss_element to include in ss count')
+   addarg("--sscount_sstype", default="EHL", type=str,
+      help='Types of secondary structure to include in count')
+   addarg("--sscount_min_ss_count", default=3, type=int,
+      help='If confidence set, minimum number of ss elements to pass the filter')
+   addarg("--sscount_strict", action='store_true', default=False,
+      help='Require that both pairs of residues in the interface are in an SS element meeting the set criteria')
    parser.has_rpxdock_args = True
    return parser
 
@@ -299,6 +328,7 @@ def process_cli_args(options, **kw):
    options.iface_summary = _iface_summary_methods[options.iface_summary]
 
    _extract_weights(options)
+   _extract_sscount(options)
 
    set_loglevel(options.loglevel)
 
@@ -479,6 +509,20 @@ def _extract_weights(kw):
    for k in todel:
       del kw[k]
    kw.wts = wts
+
+def _extract_sscount(kw):
+   pref = 'sscount_'
+   ssc = rp.Bunch()
+   todel = list()
+   for k in kw:
+      if k.startswith(pref):
+         ssc_type = k.replace(pref, '')
+         ssc[ssc_type] = kw[k]
+         todel.append(k)
+   for k in todel:
+      del kw[k]
+   kw.ssc = ssc
+
 
 def _process_arg_sspair(kw):
    kw.score_only_sspair = [''.join(sorted(p)) for p in kw.score_only_sspair]
