@@ -56,6 +56,9 @@ def symframes(sym, pos=None, axis=[0, 0, 1], **kw):
       c2 = hm.hrot(axis, np.arange(2) / 2 * 360, center=[pos[0, 3] / 2, pos[1, 3] / 2, 0])
       frames = c4a[None, None, :] @ c2[None, :, None] @ c4b[:, None, None]
       return frames.reshape(-1, 4, 4)
+   elif sym.startswith("axel"):
+      nfold = int(sym.split('_')[1])
+      return np.array(list(hm.hrot(axis, np.arange(nfold) / nfold * 360)))
    else:
       raise NotImplementedError
 

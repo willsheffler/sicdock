@@ -91,9 +91,9 @@ def make_multicomp(
          if not isinstance(v, (list, tuple)) or len(v) > 3:
             v = ['model', v]
          data[f"ncont_{k}"] = v
-   for i in range(len(bodies)):
-      data[f'disp{i}'] = (['model'], np.sum(xforms[:, i, :3, 3] * spec.axis[None, i, :3], axis=1))
-      data[f'angle{i}'] = (['model'], rp.homog.angle_of(xforms[:, i]) * 180 / np.pi)
+#   for i in range(len(bodies)):
+#      data[f'disp{i}'] = (['model'], np.sum(xforms[:, i, :3, 3] * spec.axis[None, i, :3], axis=1))
+#      data[f'angle{i}'] = (['model'], rp.homog.angle_of(xforms[:, i]) * 180 / np.pi)
    default_label = [f'comp{c}' for c in 'ABCDEFD'[:len(bodies)]]
 
    return rp.Result(
