@@ -293,10 +293,6 @@ def default_cli_parser(parent=None, **kw):
           help='Lower bound for fixed_wiggle rotation (in degrees) Default 5.0')
    addarg("--fw_rotub", default=5.0, type=float,
           help='Upper bound for fixed_wiggle rotation (in degrees) Default 5.0')
-   addarg("--fw_cartnc", default=1, type=int,
-          help='Sampling resolution for fixed_wiggle translation (in Angstroms) Default 1.0')
-   addarg("--fw_rotnc", default=1, type=int,
-          help='Sampling resolution for fixed_wiggle rotation (in degrees) Default 1.0')
    addarg("--use_orig_coords", action='store_true', default=False,
           help='remember and output the original sidechains from the input structures')
    addarg("--primary_iface_cut", default=None, help='score cut for helix primary interface')
